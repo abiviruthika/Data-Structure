@@ -1,0 +1,763 @@
+#include<iostream>
+using namespace std;
+class CAnime
+{
+   friend class minheap;
+   public:
+      CAnime();
+      CAnime(string,string,int);
+      ~CAnime();
+      void get();
+      void display();
+   private:
+      string aname;
+      string genre;
+      int rate;
+};
+class minheap
+{
+   private:
+      CAnime *heap;
+      int capacity;
+      int heapsize;
+   public:
+      minheap();
+      minheap(int);
+      ~minheap();
+      int isFull();
+      int isEmpty();
+      void percolateUp(int);
+      void percolateDown(int);
+      int insert(CAnime);
+      int deleteMin();
+      void display();
+      int search(int);
+      int increaseByKey(int,int);
+      int increaseWithKey(int,int);
+      int decreaseByKey(int,int);
+      int decreaseWithKey(int,int);
+      int buildheap(CAnime *,int);
+};
+[24bcs127@mepcolinux priority]$cat imp.cpp
+#include"head.h"
+#include<cmath>
+CAnime::CAnime(string an,string g,int r)
+{
+   aname=an;
+   genre=g;
+   rate=r;
+}
+CAnime::CAnime()
+{
+   aname="";
+   genre="";
+   rate=0;
+}
+CAnime::~CAnime()
+{
+   aname="";
+   genre="";
+   rate=0;
+}
+void CAnime::get()
+{
+   cout<<"Enter anime name:";
+   cin>>aname;
+   cout<<"Enter genre:";
+   cin>>genre;
+   cout<<"Enter rating:";
+   cin>>rate;
+}
+void CAnime::display()
+{
+        cout<<"\t\t"<<aname<<"\t"<<genre<<"\t"<<rate<<endl;
+}
+minheap::minheap()
+{
+   heapsize=0;
+   capacity=10;
+   heap=new CAnime[capacity];
+   for(int i=0;i<capacity;i++)
+   {
+      heap[i]=CAnime();
+   }
+}
+minheap::minheap(int h)
+{
+   capacity=pow(2,h+1)-1;
+   heap=new CAnime[capacity+1];
+   heapsize=0;
+}
+minheap::~minheap()
+{
+   heapsize=0;
+   capacity=0;
+   delete[]heap;
+   heap=NULL;
+}
+int minheap::isFull()
+{
+   if(heapsize==capacity)
+      return 1;
+   else
+      return 0;
+}
+int minheap::isEmpty()
+{
+   if(heapsize<1)
+      return 1;
+   else
+      return 0;
+}
+void minheap::percolateUp(int i)
+{
+   int parent=i/2;
+   CAnime temp=heap[i];
+   while(i>1 && heap[parent].rate>temp.rate)
+   {
+      heap[i]=heap[parent];
+      i=parent;
+      parent=i/2;
+   }
+   heap[i]=temp;
+}
+int minheap::insert(CAnime a)
+{
+   if(a.rate<0)
+   {
+      return -2;
+   }
+   else if(isFull())
+   {
+      cout<<"Heap is full"<<endl;
+      return -1;
+   }
+   heap[++heapsize]=a;
+   percolateUp(heapsize);
+   return 1;
+}
+void minheap::display()
+{
+    if(heapsize!=0)
+    {
+      cout<<"Elements:"<<endl;
+      for(int i=1;i<=heapsize;i++)
+      {
+         heap[i].display();
+      }
+   }
+   else
+   {
+      cout<<"There is no element in the heap"<<endl;
+   }
+}
+void minheap::percolateDown(int i)
+{
+    int child;
+    CAnime temp=heap[i];
+    while(2*i<=heapsize)
+    {
+       child=2*i;
+       if(child!=heapsize && heap[child+1].rate<heap[child].rate)
+       {
+          child++;
+       }
+       if(heap[child].rate<temp.rate)
+       {
+          heap[i]=heap[child];
+          i=child;
+       }
+       else
+          break;
+    }
+    heap[i]=temp;
+}
+int minheap::deleteMin()
+{
+    if(isEmpty())
+    {
+        return 0;
+    }
+    heap[1]=heap[heapsize--];
+    percolateDown(1);
+    return 1;
+}
+int minheap::search(int rate)
+{
+    for(int i=1;i<=heapsize;i++)
+    {
+        if(heap[i].rate==rate)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+int minheap::increaseByKey(int ele,int inc)
+{
+   int index=search(ele);
+   if(index==-1)
+   {
+      return -1;
+   }
+   else if(inc<0)
+   {
+      return -2;
+   }
+
+   else
+   {
+      heap[index].rate=ele+inc;
+      percolateDown(index);
+      return 1;
+   }
+}
+int minheap::increaseWithKey(int ele,int key)
+{
+   int index=search(ele);
+   if(index==-1)
+   {
+      return -1;
+   }
+   else if(key<0)
+   {
+      return -2;
+   }
+   else
+   {
+      if(key<=heap[index].rate)
+      {
+         return -3;
+      }
+      else
+      {
+         heap[index].rate=key;
+         percolateDown(index);
+         return 1;
+      }
+   }
+}
+int minheap::decreaseByKey(int ele,int dec)
+{
+   int index=search(ele);
+   if(index==-1)
+   {
+      return -1;
+   }
+   else if(dec<0)
+   {
+      return -2;
+   }
+   else
+   {
+      heap[index].rate=ele-dec;
+      percolateUp(index);
+      return 1;
+   }
+}
+
+int minheap::decreaseWithKey(int ele,int key)
+{
+   int index=search(ele);
+   if(index==-1)
+   {
+      return -1;
+   }
+   else if(key<0)
+   {
+      return -2;
+   }
+   else
+   {
+      if(key>=heap[index].rate)
+      {
+         return -2;
+      }
+      else
+      {
+         heap[index].rate=key;
+         percolateUp(index);
+         return 1;
+      }
+   }
+}
+int minheap::buildheap(CAnime arr[],int n)
+{
+   if(n>capacity)
+   {
+      return -1;
+   }
+   heapsize=n;
+   for(int i=1;i<=n;i++)
+   {
+      heap[i]=arr[i];
+   }
+   for(int i=heapsize/2;i>=1;i--)
+   {
+      percolateDown(i);
+   }
+   return 1;
+}
+
+
+
+[24bcs127@mepcolinux priority]$cat app.cpp
+#include "head.h"
+int main()
+{
+    int r;
+    string an,g;
+    int h, choice;
+    cout << "Enter height: ";
+    cin >> h;
+    minheap mh(h);
+    cout << " 1.Insert\n 2.Delete\n 3.search\n 4.Increase by key\n 5.Increase with key\n 6.Decrease by key\n 7.Decrease with key\n 8.Build Heap\n 9. Exit\n";
+    do
+    {
+        cout << "Enter choice: ";
+        cin >> choice;
+        switch (choice)
+        {
+         case 1:
+         {
+            cout<<"Enter Anime details"<<endl;
+            cout<<"Enter movie name:";
+            cin>>an;
+            cout<<"Enter genre";
+            cin>>g;
+            cout<<"Enter rating";
+            cin>>r;
+            CAnime a(an,g,r);
+            int res=mh.insert(a);
+            if(res == 1)
+            {
+                cout << "Insertion is done"<<endl;
+                mh.display();
+            }
+            else
+            {
+               cout<<"The rating is negative"<<endl;
+            }
+            break;
+         }
+         case 2:
+         {
+            mh.deleteMin();
+            cout<<"Element is deleted successfully"<<endl;
+            mh.display();
+            break;
+         }
+         case 3:
+         {
+            int r;
+            cout<<"Enter rating to search"<<endl;
+            cin>>r;
+            int index=mh.search(r);
+            if(index!=-1)
+            {
+                cout<<"Anime found at index"<<index<<endl;
+            }
+            else
+            {
+                cout<<"Anime not found"<<endl;
+            }
+         }
+         break;
+         case 4:
+         {
+            int ele,inc;
+            cout<<"Enter the rate to increase it:";
+            cin>>ele;
+            cout<<"Enter the rate to increase by key:";
+            cin>>inc;
+            int res=mh.increaseByKey(ele,inc);
+            if(res==1)
+            {
+                cout<<"Key increased successfully"<<endl;
+            }
+            else if(res==-2)
+            {
+               cout<<"The key is negative"<<endl;
+            }
+            else
+            {
+                cout<<"Key not found"<<endl;
+            }
+            mh.display();
+            break;
+         }
+         case 5:
+         {
+            int ele1,key;
+            cout<<"Enter the rate to increase it:";
+            cin>>ele1;
+            cout<<"Enter the rate to increase with key:";
+            cin>>key;
+            int res=mh.increaseWithKey(ele1,key);
+            if(res==1)
+            {
+                cout<<"Key increased successfully"<<endl;
+            }
+            else if(res==-1)
+            {
+                cout<<"Key not found"<<endl;
+            }
+            else if(res==-2)
+            {
+               cout<<"key is negative"<<endl;
+            }
+            else
+            {
+                cout<<"Key is not larger So increase not performed"<<endl;
+            }
+            mh.display();
+            break;
+         }
+         case 6:
+         {
+            int ele2,dec;
+            cout<<"Enter the rate to decrease it:";
+            cin>>ele2;
+            cout<<"Enter the rate to decrease by key:";
+            cin>>dec;
+            int res=mh.decreaseByKey(ele2,dec);
+            if(res==1)
+            {
+                cout<<"Key decreased successfully"<<endl;
+            }
+            else if(res==-2)
+            {
+               cout<<"key not found"<<endl;
+            }
+            else
+            {
+                cout<<"Key not found"<<endl;
+            }
+            mh.display();
+            break;
+         }
+         case 7:
+         {
+            int ele3,key1;
+            cout<<"Enter the rate to decrease it:";
+            cin>>ele3;
+            cout<<"Enter the rate to decrease with key:";
+            cin>>key1;
+            int res=mh.decreaseWithKey(ele3,key1);
+            if(res==1)
+            {
+                cout<<"Key decreased successfully"<<endl;
+            }
+            else if(res==-1)
+            {
+                cout<<"Key not found"<<endl;
+            }
+            else if(res==-2)
+            {
+               cout<<"key is negative"<<endl;
+            }
+            else
+            {
+                cout<<"Key is not smaller So decrease not performed"<<endl;
+            }
+            mh.display();
+            break;
+         }
+         case 8:
+         {
+            int a;
+            cout<<"Enter the number of anime to build heap:"<<endl;
+            cin>>a;
+            CAnime arr[50];
+            for(int i=0;i<=a;i++)
+            {
+               string an,g;
+               int r;
+               cout<<"Enter anime name,genre,rating"<<i<<":";
+               cin>>an>>g>>r;
+               arr[i]=CAnime(an,g,r);
+            }
+            int res=mh.buildheap(arr,a);
+            cout<<"ANIME\t\tName\tGenre\tRating"<<endl;
+            mh.display();
+            if(res==1)
+               cout<<"Heap build successfully"<<endl;
+            else
+               cout<<"Input exceeds the capacity"<<endl;
+            break;
+
+
+         }
+
+
+         case 9:
+         {
+            cout << "Exiting"<<endl;
+            return 0;
+            break;
+         }
+         default:
+         {
+            cout<<"Invalid choice"<<endl;
+            break;
+         }
+        }
+    } while (choice<=9);
+    return 0;
+}
+[24bcs127@mepcolinux priority]$cat makefile
+ex.o: imp.o app.o
+        g++ imp.o app.o -o ex
+imp.o: imp.cpp head.h
+        g++ -c imp.cpp
+app.o: app.cpp head.h
+        g++ -c app.cpp
+[24bcs127@mepcolinux priority]$./ex
+Enter height: 4
+ 1.Insert
+ 2.Delete
+ 3.search
+ 4.Increase by key
+ 5.Increase with key
+ 6.Decrease by key
+ 7.Decrease with key
+ 8.Build Heap
+ 9. Exit
+Enter choice: 1
+Enter Anime details
+Enter movie name:Aot
+Enter genre:action
+Enter rating:2
+Insertion is done
+Elements:
+                Aot     action  2
+Enter choice: 1
+Enter Anime details
+Enter movie name:jjk
+Enter genre:fantasy
+Enter rating:4
+Insertion is done
+Elements:
+                Aot     action  2
+                jjk     fantasy 4
+Enter choice: 1
+Enter Anime details
+Enter movie name:spyXfamily
+Enter genre:comedy
+Enter rating:8
+Insertion is done
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                spyXfamily      comedy          8
+Enter choice: 1
+Enter Anime details
+Enter movie name:Fragrant
+Enter genre:Romance
+Enter rating:5
+Insertion is done
+Elements:
+                Aot             action  2
+                jjk             fantasy 4
+                spyXfamily      comedy  8
+                Fragrant        Romance 5
+Enter choice: 1
+Enter Anime details
+Enter movie name:VinlandSaga
+Enter genre:FeelGood
+Enter rating:6
+Insertion is done
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                spyXfamily      comedy          8
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+Enter choice: 1
+Enter Anime details
+Enter movie name:Zom100
+Enter genre:zombie
+Enter rating:1
+Insertion is done
+Elements:
+                Zom100          zombie          1
+                jjk             fantasy         4
+                Aot             action          2
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+Enter choice: 1
+Enter Anime details
+Enter movie name:DrStone
+Enter genre:scifi
+Enter rating:3
+Insertion is done
+Elements:
+                Zom100          zombie          1
+                jjk             fantasy         4
+                Aot             action          2
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                DrStone         scifi           3
+Enter choice: 1
+Enter Anime details
+Enter movie name:Monster
+Enter genre:psychological
+Enter rating:10
+Insertion is done
+Elements:
+                Zom100          zombie          1
+                jjk             fantasy         4
+                Aot             action          2
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                DrStone         scifi           3
+                Monster         psychological   10
+Enter choice: 1
+Enter Anime details
+Enter movie name:demonSlayer
+Enter genre:fantasy
+Enter rating:7
+Insertion is done
+Elements:
+                Zom100          zombie          1
+                jjk             fantasy         4
+                Aot             action          2
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                DrStone         scifi           3
+                Monster         psychological   10
+                demonSlayer     fantasy 7
+Enter choice: 1
+Enter Anime details
+Enter movie name:dandadan
+Enter genre:action
+Enter rating:9
+Insertion is done
+Elements:
+                Zom100          zombie          1
+                jjk             fantasy         4
+                Aot             action          2
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                DrStone         scifi           3
+                Monster         psychological   10
+                demonSlayer     fantasy         7
+                dandadan        action          9
+Enter choice: 2
+Element is deleted successfully
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                DrStone         scifi           3
+                Fragrant        Romance         5
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                Monster         psychological   10
+                demonSlayer     fantasy         7
+Enter choice: 3
+Enter rating to search
+10
+Anime found at index8
+Enter choice: 3
+Enter rating to search
+90
+Anime not found
+Enter choice: 4
+Enter the rate to increase it:5
+Enter the rate to increase by key:11
+Key increased successfully
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                DrStone         scifi           3
+                demonSlayer     Fantasy         7
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                Monster         psychological   10
+                Fragrant        Romance         16
+Enter choice: 5
+Enter the rate to increase it:7
+Enter the rate to increase with key:15
+Key is not larger So increase not performed
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                DrStone         scifi           3
+                demonSlayer     fantasy         7
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                Monster         psychological   10
+                Fragrant        Romance         16
+Enter choice: 5
+Enter the rate to increase it:7
+Enter the rate to increase with key:13
+Key increased successfully
+Elements:
+                Aot             action          2
+                jjk             fantasy         4
+                DrStone         scifi           3
+                Monster         psychological   10
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                demonSlayer     fantasy         13
+                Fragrant        Romance         16
+Enter choice: 6
+Enter the rate to decrease it:10
+Enter the rate to decrease by key:8
+Key decreased successfully
+Elements:
+                Aot             action          2
+                Monster         psychological   2
+                DrStone         scifi           3
+                jjk             fantasy         4
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                demonSlayer     fantasy         13
+                Fragrant        Romance         16
+Enter choice: 7
+Enter the rate to decrease it:2
+Enter the rate to decrease with key:8
+key is negative
+Elements:
+                Aot             action          2
+                Monster         psychological   2
+                DrStone         scifi           3
+                jjk             fantasy         4
+                VinlandSaga     FeelGood        6
+                spyXfamily      comedy          8
+                dandadan        action          9
+                demonSlayer     fantasy         13
+                Fragrant        Romance         16
+Enter choice: 8
+Enter the number of anime to build heap:
+3
+Enter anime name,genre,rating0:jjk
+fantasy
+2
+Enter anime name,genre,rating1:Aot
+action
+9
+Enter anime name,genre,rating2:Zom100
+zombie
+1
+Enter anime name,genre,rating3:SpyXFamily
+comedy
+5
+ANIME           Name    Genre   Rating
+Elements:
+                Zom100  zombie  1
+                Aot     action  9
+                SpyXFamily      comedy  5
+Heap build successfully
+Enter choice: 9
+Exiting
